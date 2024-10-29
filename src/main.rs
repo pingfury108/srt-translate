@@ -18,20 +18,24 @@ fn App() -> Element {
 
     rsx! {
         div {
-            class: "container",
+            class: "container mx-auto px-4",
             div {
-                class: "grid grid-cols-4",
-                h1 {
-                    "字幕翻译"
+                class: "grid grid-cols-2",
+                div {
+                    h1 {
+                        "字幕翻译"
+                    },
                 },
-
-                input {
-                    r#type: "file",
+                div {
+                    input {
+                        r#type: "file",
+                    }
                 }
             }
             div {
 
                 table {
+                    class: "table-auto",
                     thead {
                         tr {
                             th {"index"},
