@@ -39,11 +39,10 @@ async fn main() {
 
     let mut new_subs = Subtitles::new();
     let subs_vec = subs.to_vec();
-    let subs_vec = &subs_vec[0..50];
+    //let subs_vec = &subs_vec[0..50];
 
     let bar = ProgressBar::new(subs_vec.len() as u64);
     for (index, s) in subs_vec.iter().enumerate() {
-        //log::debug!("{}", s.text)
         bar.inc(1);
         new_subs.push(s.clone());
 
@@ -88,8 +87,7 @@ async fn main() {
     }
     new_subs.sort();
     bar.finish();
-    //println!("{}", new_subs);
     new_subs
-        .write_to_file("ttt.srt", None)
+        .write_to_file(args.to_file, None)
         .expect("write new srt file");
 }
