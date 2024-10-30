@@ -1,15 +1,13 @@
 [package]
 name = "srt-translate"
 version = "0.1.0"
-authors = ["pingfury <pingfury@outlook.com>"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-
-dioxus = { version = "0.5", features = ["web"] }
-
-# Debug
-dioxus-logger = "0.5.1"
-manganis = "0.2.2"
+clap = { version = "4.5.20", features = ["derive"] }
+dify-client = "0.3.1"
+env_logger = "0.11.5"
+indicatif = "0.17.8"
+log = "0.4.22"
+srtlib = "0.2.0"
+tokio = { version = "1.41.0", features = ["full"] }
