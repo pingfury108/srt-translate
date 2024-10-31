@@ -22,13 +22,21 @@ struct Args {
 
     #[arg(long, default_value_t = String::from("https://api.dify.ai"))]
     dify_base_url: String,
+
+    #[arg(long, default_value_t = false)]
+    only_print: bool,
 }
 
 #[tokio::main]
 async fn main() {
     env_logger::init();
     let args = Args::parse();
-    let subs = Subtitles::parse_from_file(args.src_file, None).unwrap();
+    let subs = Subtitles::parse_from_file(args.src_file, None).expect("reade srt file");
+
+    if args.only_print {
+        println!("{}", subs);
+        return;
+    }
 
     let config = Config {
         base_url: args.dify_base_url,
@@ -79,7 +87,10 @@ async fn main() {
 
         let result = client.api().completion_messages(data).await;
         match result {
-            Ok(r) => new_subs.push(Subtitle::new(s.num, s.start_time, s.end_time, r.answer)),
+            Ok(r) => {
+                log::debug!("{}", r.answer);
+                new_subs.push(Subtitle::new(s.num, s.start_time, s.end_time, r.answer))
+            }
             Err(e) => {
                 log::error!("{}", e)
             }
