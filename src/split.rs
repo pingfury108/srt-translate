@@ -1,8 +1,5 @@
 use clap::Parser;
-use dify_client::{request, Client, Config};
-use indicatif::ProgressBar;
 use srtlib::{Subtitle, Subtitles};
-use std::{collections::HashMap, fs, path::Path, time::Duration};
 
 /// split subtitle
 #[derive(Parser, Debug)]
@@ -24,14 +21,29 @@ async fn main() {
     let mut subs_lang1 = Subtitles::new();
     let mut subs_lang2 = Subtitles::new();
 
-    for sub in subs.iter() {
+    for (index, sub) in subs.to_vec().iter().enumerate() {
+        println!("{}", sub.text);
         let parts: Vec<&str> = sub.text.split('\n').collect();
         if parts.len() == 2 {
-            subs_lang1.push(Subtitle::new(sub.index, sub.start, sub.end, parts[0].to_string()));
-            subs_lang2.push(Subtitle::new(sub.index, sub.start, sub.end, parts[1].to_string()));
+            subs_lang1.push(Subtitle::new(
+                index,
+                sub.start_time,
+                sub.end_time,
+                parts[0].to_string(),
+            ));
+            subs_lang2.push(Subtitle::new(
+                index,
+                sub.start_time,
+                sub.end_time,
+                parts[1].to_string(),
+            ));
         }
     }
 
-    subs_lang1.write_to_file(format!("{}_lang1.srt", args.to_file), None).expect("write lang1 srt file");
-    subs_lang2.write_to_file(format!("{}_lang2.srt", args.to_file), None).expect("write lang2 srt file");
+    subs_lang1
+        .write_to_file(format!("{}_lang1.srt", args.to_file), None)
+        .expect("write lang1 srt file");
+    subs_lang2
+        .write_to_file(format!("{}_lang2.srt", args.to_file), None)
+        .expect("write lang2 srt file");
 }
