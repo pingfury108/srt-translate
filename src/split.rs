@@ -21,17 +21,17 @@ async fn main() {
     let args = Args::parse();
     let subs = Subtitles::parse_from_file(&args.src_file, None).expect("read srt file");
 
-    let start_index = new_subs.len();
-    let subs_vec = subs.to_vec();
-    //let subs_vec = &subs_vec[new_subs.len() - 1..subs.len()];
+    let mut subs_lang1 = Subtitles::new();
+    let mut subs_lang2 = Subtitles::new();
 
-    let bar = ProgressBar::new(subs_vec.len() as u64);
-    for (index, s) in subs_vec.iter().enumerate().skip(start_index) {
-        bar.inc(1);
+    for sub in subs.iter() {
+        let parts: Vec<&str> = sub.text.split('\n').collect();
+        if parts.len() == 2 {
+            subs_lang1.push(Subtitle::new(sub.index, sub.start, sub.end, parts[0].to_string()));
+            subs_lang2.push(Subtitle::new(sub.index, sub.start, sub.end, parts[1].to_string()));
+        }
     }
-    new_subs.sort();
-    bar.finish();
-    new_subs
-        .write_to_file(args.to_file, None)
-        .expect("write new srt file");
+
+    subs_lang1.write_to_file(format!("{}_lang1.srt", args.to_file), None).expect("write lang1 srt file");
+    subs_lang2.write_to_file(format!("{}_lang2.srt", args.to_file), None).expect("write lang2 srt file");
 }
