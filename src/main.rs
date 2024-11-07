@@ -2,7 +2,7 @@ use clap::Parser;
 use dify_client::{request, Client, Config};
 use indicatif::ProgressBar;
 use srtlib::{Subtitle, Subtitles};
-use std::{collections::HashMap, fs::{self, OpenOptions}, io::{self, BufRead, BufReader, Write}, path::Path, time::Duration};
+use std::{collections::HashMap, fs, path::Path, time::Duration};
 
 /// srt-translate subtitle translation tool
 #[derive(Parser, Debug)]
@@ -35,16 +35,7 @@ async fn main() {
 
     let temp_file_path = format!("{}.temp", args.to_file);
     let mut new_subs = if Path::new(&temp_file_path).exists() {
-        let file = fs::File::open(&temp_file_path).expect("open temp file");
-        let reader = BufReader::new(file);
-        let mut subs = Subtitles::new();
-        for line in reader.lines() {
-            let line = line.expect("read line");
-            if let Ok(sub) = Subtitle::from_str(&line) {
-                subs.push(sub);
-            }
-        }
-        subs
+        Subtitles::parse_from_file(&temp_file_path, None).expect("read tmp srt file")
     } else {
         Subtitles::new()
     };
@@ -63,7 +54,7 @@ async fn main() {
 
     let start_index = new_subs.len();
     let subs_vec = subs.to_vec();
-    //let subs_vec = &subs_vec[0..50];
+    //let subs_vec = &subs_vec[new_subs.len() - 1..subs.len()];
 
     let bar = ProgressBar::new(subs_vec.len() as u64);
     for (index, s) in subs_vec.iter().enumerate().skip(start_index) {
@@ -107,13 +98,12 @@ async fn main() {
                 log::debug!("{}", r.answer);
                 let translated_sub = Subtitle::new(s.num, s.start_time, s.end_time, r.answer);
                 new_subs.push(translated_sub.clone());
+                new_subs.sort();
 
-                let mut file = OpenOptions::new()
-                    .create(true)
-                    .append(true)
-                    .open(&temp_file_path)
-                    .expect("open temp file for writing");
-                writeln!(file, "{}", translated_sub).expect("write to temp file");
+                new_subs
+                    .write_to_file(&temp_file_path, None)
+                    .expect("write tmp srt file");
+                log::debug!("save tmp srt file {}", &temp_file_path)
             }
             Err(e) => {
                 log::error!("{}", e)
