@@ -25,6 +25,7 @@ struct Args {
 
     #[arg(long, default_value_t = false)]
     only_print: bool,
+}
 
 #[tokio::main]
 async fn main() {
