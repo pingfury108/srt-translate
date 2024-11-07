@@ -25,7 +25,6 @@ struct Args {
 
     #[arg(long, default_value_t = false)]
     only_print: bool,
-    fs::remove_file(temp_file_path).expect("remove temp file");
 
 #[tokio::main]
 async fn main() {
@@ -125,4 +124,6 @@ async fn main() {
     new_subs
         .write_to_file(args.to_file, None)
         .expect("write new srt file");
+
+    fs::remove_file(temp_file_path).expect("remove temp file");
 }
