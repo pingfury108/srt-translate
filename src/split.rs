@@ -23,19 +23,19 @@ async fn main() {
 
     for (index, sub) in subs.to_vec().iter().enumerate() {
         println!("{}", sub.text);
-        let parts: Vec<&str> = sub.text.split('\n').collect();
-        if parts.len() == 2 {
+        if index % 2 == 0 {
             subs_lang1.push(Subtitle::new(
                 index,
                 sub.start_time,
                 sub.end_time,
-                parts[0].to_string(),
+                sub.text.clone(),
             ));
+        } else {
             subs_lang2.push(Subtitle::new(
                 index,
                 sub.start_time,
                 sub.end_time,
-                parts[1].to_string(),
+                sub.text.clone(),
             ));
         }
     }
