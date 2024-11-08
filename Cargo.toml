@@ -11,3 +11,7 @@ indicatif = "0.17.8"
 log = "0.4.22"
 srtlib = "0.2.0"
 tokio = { version = "1.41.0", features = ["full"] }
+
+[[bin]]
+  name = "srt-split"
+  path = "src/split.rs"
