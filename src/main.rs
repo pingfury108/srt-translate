@@ -15,7 +15,7 @@ struct Args {
     src_file: String,
 
     #[arg(short, long)]
-    to_file: String,
+    to_file: Option<String>,
 
     #[arg(short, long)]
     dify_app_token: String,
@@ -27,13 +27,35 @@ struct Args {
     only_print: bool,
 }
 
+fn parse_filename_ext(to_file: &str) -> (String, String) {
+    let p = Path::new(to_file);
+    let dir = match p.parent() {
+        Some(s) => String::from(s.to_str().expect("")),
+        None => String::from(""),
+    };
+    let name = match p.file_stem() {
+        Some(s) => String::from(s.to_str().expect("")),
+        None => String::from(""),
+    };
+    let ext = match p.extension() {
+        Some(s) => String::from(s.to_str().expect("")),
+        None => String::from(""),
+    };
+    return (format!("{}/{}", dir, name), ext);
+}
+
 #[tokio::main]
 async fn main() {
     env_logger::init();
     let args = Args::parse();
     let subs = Subtitles::parse_from_file(&args.src_file, None).expect("read srt file");
 
-    let temp_file_path = format!("{}.temp", args.to_file);
+    let (to_file, to_file_ext) = match args.to_file {
+        Some(s) => parse_filename_ext(&s),
+        None => parse_filename_ext(&args.src_file),
+    };
+
+    let temp_file_path = format!("{}.{}.temp", to_file, to_file_ext);
     let mut new_subs = if Path::new(&temp_file_path).exists() {
         Subtitles::parse_from_file(&temp_file_path, None).expect("read tmp srt file")
     } else {
@@ -56,7 +78,7 @@ async fn main() {
     let subs_vec = subs.to_vec();
     //let subs_vec = &subs_vec[new_subs.len() - 1..subs.len()];
 
-    let bar = ProgressBar::new(subs_vec.len() as u64);
+    let bar = ProgressBar::new(subs_vec.len() as u64 - start_index as u64);
     for (index, s) in subs_vec.iter().enumerate().skip(start_index) {
         bar.inc(1);
         new_subs.push(s.clone());
@@ -113,7 +135,7 @@ async fn main() {
     new_subs.sort();
     bar.finish();
     new_subs
-        .write_to_file(args.to_file, None)
+        .write_to_file(format!("{}-translate.{}", to_file, to_file_ext), None)
         .expect("write new srt file");
 
     fs::remove_file(temp_file_path).expect("remove temp file");
